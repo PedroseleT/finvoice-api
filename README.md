@@ -5,7 +5,7 @@ Assistente financeiro desenvolvido com Java, Spring Boot, Spring AI e Google Gem
 ![Java](https://img.shields.io/badge/Java-21-007396?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
 ![Spring AI](https://img.shields.io/badge/Spring%20AI-1.1-6DB33F?style=for-the-badge)
-![Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![Gemini](https://img.shields.io/badge/Google%20Gemini-3.1%20Flash--Lite-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![CI](https://img.shields.io/github/actions/workflow/status/PedroseleT/finvoice-api/ci.yml?branch=main&style=for-the-badge&label=CI)
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
@@ -40,7 +40,7 @@ O projeto foi desenvolvido para o desafio de Spring Boot com Spring AI da DIO, a
 | Spring Boot | Base da API |
 | Spring AI | Integração com IA |
 | Google Gemini API | Provider principal de IA |
-| gemini-2.5-flash | Modelo de chat usado pela aplicação |
+| gemini-3.1-flash-lite | Modelo de chat usado pela aplicação |
 | ChatClient | Interpretação dos comandos |
 | Tool Calling | Execução das ações financeiras |
 | Spring Data JPA | Persistência |
@@ -74,7 +74,7 @@ O fluxo principal usa texto com `ChatClient`, Gemini e Tool Calling. O endpoint 
 
 ## Modelo escolhido
 
-O modelo configurado é `gemini-2.5-flash`, escolhido por estar disponível na integração oficial Google GenAI do Spring AI, oferecer suporte ao fluxo de Tool Calling e ser adequado para comandos simples em português. O projeto pode utilizar o nível gratuito da Gemini API conforme limites, disponibilidade e regras definidos pelo Google.
+O modelo configurado é `gemini-3.1-flash-lite`, escolhido por estar disponível na Gemini API, oferecer suporte a Function Calling, aceitar entradas multimodais e possuir nível gratuito conforme limites, disponibilidade e regras definidos pelo Google.
 
 ## Tool Calling
 
