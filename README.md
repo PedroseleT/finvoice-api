@@ -70,7 +70,7 @@ flowchart LR
     K[Audio] --> B
 ```
 
-O fluxo principal usa texto com `ChatClient`, Gemini e Tool Calling. O endpoint `/assistant/audio` envia o arquivo de áudio ao Gemini como entrada multimodal quando a integração está configurada, mas não expõe uma transcrição literal separada. TTS não está disponível na integração Google GenAI usada pelo projeto e o endpoint de fala retorna `501 Not Implemented`.
+O fluxo principal usa texto com `ChatClient`, Gemini e Tool Calling. O endpoint `/assistant/audio` envia o arquivo de áudio ao Gemini como entrada multimodal, interpreta o comando financeiro e executa a ferramenta correspondente. TTS não está disponível na integração Google GenAI usada pelo projeto e o endpoint de fala retorna `501 Not Implemented`.
 
 ## Modelo escolhido
 
@@ -170,6 +170,10 @@ Formatos aceitos para demonstração:
 
 O arquivo precisa existir, não pode estar vazio e deve respeitar o limite de tamanho configurado. O áudio é enviado ao Gemini como entrada multimodal pelo `ChatClient`. O endpoint retorna a resposta interpretada pelo modelo, mas mantém `transcription` como `null` porque a implementação atual não usa um serviço separado de transcrição.
 
+## Validação em produção
+
+O fluxo com Spring AI, Google Gemini, `ChatClient`, Tool Calling e `FinancialTools` foi validado no Render. Foram comprovados comandos por texto para criação de despesa, criação de receita, consulta de saldo, resumo financeiro e consulta por categoria. Também foi validado um comando por áudio multimodal criando uma despesa real.
+
 ## Configuração da IA
 
 Os endpoints REST financeiros, Swagger, health check, testes e build funcionam sem chave de IA.
@@ -251,6 +255,12 @@ Swagger:
 https://finvoice-api-s0ah.onrender.com/swagger-ui.html
 ```
 
+Health:
+
+```text
+https://finvoice-api-s0ah.onrender.com/actuator/health
+```
+
 O deploy utiliza Docker e H2 em memória, sem banco externo.
 
 ## Docker
@@ -292,7 +302,7 @@ Este projeto reforçou como integrar IA a uma aplicação com regras reais, mant
 
 ## Entrega DIO
 
-Desenvolvi a FinVoice API, um assistente financeiro utilizando Java, Spring Boot e Spring AI. A aplicação utiliza Google Gemini para interpretar comandos em linguagem natural e executar operações reais através de Tool Calling, como registrar transações, consultar saldo e gerar resumos financeiros. Também implementei validações, endpoints REST, testes automatizados e uma arquitetura organizada para separar a IA das regras de negócio.
+Desenvolvi a FinVoice API, um assistente financeiro utilizando Java, Spring Boot e Spring AI. A aplicação utiliza Google Gemini para interpretar comandos em linguagem natural e executar operações reais através de Tool Calling, como registrar receitas e despesas, consultar saldo e gerar resumos financeiros. Também implementei comandos por áudio multimodal, validações, persistência, endpoints REST, testes automatizados, documentação com Swagger e deploy no Render.
 
 Repositório:
 
