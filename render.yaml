@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: finvoice-api
+    runtime: docker
+    plan: free
+    repo: https://github.com/PedroseleT/finvoice-api
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /actuator/health
