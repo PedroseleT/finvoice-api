@@ -6,6 +6,7 @@ import com.pedroteles.finvoice.dto.AssistantAudioResponse;
 import com.pedroteles.finvoice.dto.AssistantResponse;
 import com.pedroteles.finvoice.exception.AiProcessingException;
 import com.pedroteles.finvoice.exception.InvalidAudioFileException;
+import com.pedroteles.finvoice.exception.UnsupportedAiCapabilityException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Locale;
@@ -13,6 +14,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -70,14 +73,13 @@ public class AssistantService {
         aiProviderStatus.requireConfigured();
 
         try {
-            String transcription = springAiClient.transcribe(toResource(file));
-            AssistantResponse response = processText(transcription);
+            String response = springAiClient.chatWithAudio(toResource(file), toMimeType(file));
 
             return new AssistantAudioResponse(
-                    transcription,
-                    response.message(),
-                    response.understoodAction(),
-                    response.processedAt()
+                    null,
+                    response,
+                    "Áudio interpretado pelo Gemini multimodal com Tool Calling.",
+                    LocalDateTime.now()
             );
         } catch (IOException exception) {
             throw new InvalidAudioFileException("Não foi possível ler o arquivo de áudio.");
@@ -87,13 +89,7 @@ public class AssistantService {
     }
 
     public byte[] generateSpeech(String text) {
-        aiProviderStatus.requireConfigured();
-
-        try {
-            return springAiClient.speech(text);
-        } catch (RuntimeException exception) {
-            throw new AiProcessingException("Não foi possível gerar a resposta em áudio.", exception);
-        }
+        throw new UnsupportedAiCapabilityException("TTS não está disponível na integração Google GenAI usada pelo projeto.");
     }
 
     public byte[] processAudioToSpeech(MultipartFile file) {
@@ -146,5 +142,15 @@ public class AssistantService {
                 return filename;
             }
         };
+    }
+
+    private MimeType toMimeType(MultipartFile file) {
+        String contentType = file.getContentType();
+
+        if (StringUtils.hasText(contentType)) {
+            return MimeTypeUtils.parseMimeType(contentType);
+        }
+
+        return MimeTypeUtils.APPLICATION_OCTET_STREAM;
     }
 }

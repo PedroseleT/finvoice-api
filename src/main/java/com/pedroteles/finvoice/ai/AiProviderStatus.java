@@ -10,7 +10,7 @@ public class AiProviderStatus {
 
     private final String apiKey;
 
-    public AiProviderStatus(@Value("${spring.ai.openai.api-key:}") String apiKey) {
+    public AiProviderStatus(@Value("${spring.ai.google.genai.api-key:}") String apiKey) {
         this.apiKey = apiKey;
     }
 

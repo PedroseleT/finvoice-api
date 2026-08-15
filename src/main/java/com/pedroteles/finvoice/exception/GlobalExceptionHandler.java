@@ -54,6 +54,11 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.BAD_GATEWAY, exception.getMessage());
     }
 
+    @ExceptionHandler(UnsupportedAiCapabilityException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedAiCapability(UnsupportedAiCapabilityException exception) {
+        return error(HttpStatus.NOT_IMPLEMENTED, exception.getMessage());
+    }
+
     private ResponseEntity<ErrorResponse> error(HttpStatus status, String message) {
         return ResponseEntity
                 .status(status)

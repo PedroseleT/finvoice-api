@@ -4,7 +4,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,6 +12,7 @@ import com.pedroteles.finvoice.dto.AssistantAudioResponse;
 import com.pedroteles.finvoice.dto.AssistantResponse;
 import com.pedroteles.finvoice.dto.AssistantTextRequest;
 import com.pedroteles.finvoice.dto.SpeechRequest;
+import com.pedroteles.finvoice.exception.UnsupportedAiCapabilityException;
 import com.pedroteles.finvoice.service.AssistantService;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -38,20 +38,20 @@ class AssistantControllerTest {
 
     @Test
     void shouldProcessTextCommand() throws Exception {
-        AssistantTextRequest request = new AssistantTextRequest("Qual é meu saldo?");
+        AssistantTextRequest request = new AssistantTextRequest("Qual e meu saldo?");
         AssistantResponse response = new AssistantResponse(
-                "Seu saldo atual é R$ 100.00.",
+                "Seu saldo atual e R$ 100.00.",
                 "Consulta de saldo",
                 LocalDateTime.now()
         );
 
-        when(assistantService.processText("Qual é meu saldo?")).thenReturn(response);
+        when(assistantService.processText("Qual e meu saldo?")).thenReturn(response);
 
         mockMvc.perform(post("/assistant/text")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Seu saldo atual é R$ 100.00."))
+                .andExpect(jsonPath("$.message").value("Seu saldo atual e R$ 100.00."))
                 .andExpect(jsonPath("$.understoodAction").value("Consulta de saldo"));
     }
 
@@ -59,9 +59,9 @@ class AssistantControllerTest {
     void shouldProcessAudioCommand() throws Exception {
         MockMultipartFile file = new MockMultipartFile("file", "audio.mp3", "audio/mpeg", new byte[]{1, 2, 3});
         AssistantAudioResponse response = new AssistantAudioResponse(
-                "Gastei 45 reais no mercado",
+                null,
                 "Despesa registrada.",
-                "Criação de despesa",
+                "Criacao de despesa",
                 LocalDateTime.now()
         );
 
@@ -69,22 +69,21 @@ class AssistantControllerTest {
 
         mockMvc.perform(multipart("/assistant/audio").file(file))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transcription").value("Gastei 45 reais no mercado"))
+                .andExpect(jsonPath("$.transcription").doesNotExist())
                 .andExpect(jsonPath("$.response").value("Despesa registrada."));
     }
 
     @Test
-    void shouldGenerateSpeech() throws Exception {
+    void shouldReturnNotImplementedForSpeech() throws Exception {
         SpeechRequest request = new SpeechRequest("Saldo atual");
 
-        when(assistantService.generateSpeech("Saldo atual")).thenReturn(new byte[]{1, 2, 3});
+        when(assistantService.generateSpeech("Saldo atual")).thenThrow(new UnsupportedAiCapabilityException("TTS nao suportado."));
 
         mockMvc.perform(post("/assistant/speech")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("audio/mpeg"))
-                .andExpect(content().bytes(new byte[]{1, 2, 3}));
+                .andExpect(status().isNotImplemented())
+                .andExpect(jsonPath("$.status").value(501));
     }
 
     @Test

@@ -1,7 +1,7 @@
 package com.pedroteles.finvoice.service;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -14,6 +14,7 @@ import com.pedroteles.finvoice.dto.AssistantAudioResponse;
 import com.pedroteles.finvoice.dto.AssistantResponse;
 import com.pedroteles.finvoice.exception.AiProviderNotConfiguredException;
 import com.pedroteles.finvoice.exception.InvalidAudioFileException;
+import com.pedroteles.finvoice.exception.UnsupportedAiCapabilityException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.util.MimeType;
 
 @ExtendWith(MockitoExtension.class)
 class AssistantServiceTest {
@@ -50,15 +52,14 @@ class AssistantServiceTest {
     }
 
     @Test
-    void shouldProcessAudioWithTranscriptionAndChat() {
+    void shouldProcessAudioWithGeminiMultimodal() {
         MockMultipartFile file = new MockMultipartFile("file", "audio.mp3", "audio/mpeg", new byte[]{1, 2, 3});
 
-        when(springAiClient.transcribe(any(Resource.class))).thenReturn("Recebi 100 reais");
-        when(springAiClient.chat("Recebi 100 reais")).thenReturn("Receita registrada.");
+        when(springAiClient.chatWithAudio(any(Resource.class), any(MimeType.class))).thenReturn("Receita registrada.");
 
         AssistantAudioResponse response = assistantService.processAudio(file);
 
-        assertEquals("Recebi 100 reais", response.transcription());
+        assertNull(response.transcription());
         assertEquals("Receita registrada.", response.response());
     }
 
@@ -80,17 +81,11 @@ class AssistantServiceTest {
     void shouldThrowWhenProviderIsNotConfigured() {
         doThrow(new AiProviderNotConfiguredException()).when(aiProviderStatus).requireConfigured();
 
-        assertThrows(AiProviderNotConfiguredException.class, () -> assistantService.processText("Qual é meu saldo?"));
+        assertThrows(AiProviderNotConfiguredException.class, () -> assistantService.processText("Qual e meu saldo?"));
     }
 
     @Test
-    void shouldGenerateSpeech() {
-        byte[] audio = new byte[]{10, 20, 30};
-
-        when(springAiClient.speech("Saldo atual")).thenReturn(audio);
-
-        byte[] result = assistantService.generateSpeech("Saldo atual");
-
-        assertArrayEquals(audio, result);
+    void shouldRejectSpeechGenerationWhenUnsupported() {
+        assertThrows(UnsupportedAiCapabilityException.class, () -> assistantService.generateSpeech("Saldo atual"));
     }
 }
