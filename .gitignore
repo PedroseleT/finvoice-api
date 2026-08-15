@@ -1,0 +1,10 @@
+target/
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.env
+*.log
+tmp/
+temp/
